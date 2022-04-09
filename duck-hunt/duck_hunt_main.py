@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import pygame
 from concurrent.futures import ThreadPoolExecutor
+import math
 
 import ece471_duckhunt as dh 
 from ece471_duckhunt import envs
@@ -19,7 +20,7 @@ print(f"OpenGym version: {gym.__version__} (=0.18.0)")
 
 """ If your algorithm isn't ready, it'll perform a NOOP """
 def noop():
-    return [{'coordinate' : 8, 'move_type' : 'relative'}]
+    return [{'coordinate' : (0,0), 'move_type' : 'absolute'}]
 
 """ Here is the main loop for you algorithm """
 def main(args):
@@ -27,6 +28,11 @@ def main(args):
     result = {}
     future = None
     executor = ThreadPoolExecutor(max_workers=1)
+    previous_frame = env.render()
+    current_frame = env.render()
+    previous_coordinate = (0,0)
+    coordinate = (0,0)
+    i = 0
     while True:
         """ 
         Use the `current_frame` from either env.step of env.render
@@ -34,7 +40,7 @@ def main(args):
         
         current_frame : np.ndarray (width, height, 3), np.uint8, RGB
         """
-        current_frame = env.render() 
+        current_frame = env.render()
         
         """
             The game needs to continue while you process the previous image so 
@@ -54,7 +60,7 @@ def main(args):
         else:
             if future is None:
                 result = noop()
-                future = executor.submit(GetLocation, args.move_type, env, current_frame)
+                future = executor.submit(GetLocation, env, current_frame, previous_frame, coordinate, previous_coordinate)
             elif future.done():
                 result = future.result()
                 future = None
@@ -70,8 +76,10 @@ def main(args):
         
         """
         for res in result[:10]:
+            previous_coordinate = coordinate
             coordinate  = res['coordinate']
             move_type   = res['move_type']
+            previous_frame = current_frame
             current_frame, level_done, game_done, info = env.step(coordinate, move_type)
             if level_done or game_done:
                 break
