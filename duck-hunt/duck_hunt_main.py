@@ -32,7 +32,6 @@ def main(args):
     current_frame = env.render()
     previous_coordinate = (0,0)
     coordinate = (0,0)
-    i = 0
     while True:
         """ 
         Use the `current_frame` from either env.step of env.render
