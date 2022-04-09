@@ -20,7 +20,7 @@ print(f"OpenGym version: {gym.__version__} (=0.18.0)")
 
 """ If your algorithm isn't ready, it'll perform a NOOP """
 def noop():
-    return [{'coordinate' : (0,0), 'move_type' : 'absolute'}]
+    return [{'coordinate' : tuple(env.action_space_abs.sample()), 'move_type' : 'absolute'}]
 
 """ Here is the main loop for you algorithm """
 def main(args):
@@ -30,8 +30,6 @@ def main(args):
     executor = ThreadPoolExecutor(max_workers=1)
     previous_frame = env.render()
     current_frame = env.render()
-    previous_coordinate = (0,0)
-    coordinate = (0,0)
     while True:
         """ 
         Use the `current_frame` from either env.step of env.render
@@ -59,7 +57,7 @@ def main(args):
         else:
             if future is None:
                 result = noop()
-                future = executor.submit(GetLocation, env, current_frame, previous_frame, coordinate, previous_coordinate)
+                future = executor.submit(GetLocation, env, current_frame, previous_frame)
             elif future.done():
                 result = future.result()
                 future = None
@@ -75,7 +73,6 @@ def main(args):
         
         """
         for res in result[:10]:
-            previous_coordinate = coordinate
             coordinate  = res['coordinate']
             move_type   = res['move_type']
             previous_frame = current_frame

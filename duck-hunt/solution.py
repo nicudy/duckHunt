@@ -7,14 +7,15 @@ Replace following with your own algorithm logic
 Two random coordinate generator has been provided for testing purposes.
 Manual mode where you can use your mouse as also been added for testing purposes.
 """
-def GetLocation(env, current_frame, previous_frame, coordinate, previous_coordinate):
+def GetLocation(env, current_frame, previous_frame):
+	
     diff = current_frame - previous_frame
-    black = np.column_stack(np.where(diff > 0))
-    if len(black) == 0:
-        black = np.column_stack(np.where(diff < 0))
-    coordinate = coordinate if len(black) == 0 else tuple(black[int(len(black)/2)])
-    if len(coordinate) == 3:
-        coordinate = coordinate[:2]
+    birds = np.column_stack(np.where(diff > 0))
+
+    if len(birds) == 0:
+        birds = np.column_stack(np.where(diff < 0))
+
+    coordinate = tuple(env.action_space_abs.sample()) if len(birds) == 0 else tuple(birds[int(len(birds)/2)])[:2]
     
-    return [{'coordinate' : coordinate if coordinate != previous_coordinate else previous_coordinate, 'move_type' : "absolute"}]
+    return [{'coordinate' : coordinate, 'move_type' : "absolute"}]
 
