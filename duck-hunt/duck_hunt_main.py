@@ -20,6 +20,7 @@ print(f"OpenGym version: {gym.__version__} (=0.18.0)")
 
 """ If your algorithm isn't ready, it'll perform a NOOP """
 def noop():
+    # If the returned coordinate is off of the frame, then pick a random coordinate
     return [{'coordinate' : tuple(env.action_space_abs.sample()), 'move_type' : 'absolute'}]
 
 """ Here is the main loop for you algorithm """
@@ -28,6 +29,7 @@ def main(args):
     result = {}
     future = None
     executor = ThreadPoolExecutor(max_workers=1)
+    # get the current and previous frame
     previous_frame = env.render()
     current_frame = env.render()
     while True:
@@ -57,6 +59,7 @@ def main(args):
         else:
             if future is None:
                 result = noop()
+                # geet the next location to shoot at
                 future = executor.submit(GetLocation, env, current_frame, previous_frame)
             elif future.done():
                 result = future.result()
@@ -75,7 +78,9 @@ def main(args):
         for res in result[:10]:
             coordinate  = res['coordinate']
             move_type   = res['move_type']
+            # save the previous frame
             previous_frame = current_frame
+            # move to the calculated location
             current_frame, level_done, game_done, info = env.step(coordinate, move_type)
             if level_done or game_done:
                 break
